@@ -268,7 +268,7 @@ proc determineFuzzParameters*(
     styledEcho(fgGreen, &"Identified {excellentResults.len} very favorable configurations:")
     for r in excellentResults:
       let c = r.configuration
-      echo &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {r.hits}"
+      styleDim.styledEcho &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {r.hits}"
     
     let mostFavorableResult = excellentResults.uFold(
       proc(
@@ -283,7 +283,7 @@ proc determineFuzzParameters*(
 
     styledEcho(fgGreen, "Most favorable configuration is: ")
     let c = mostFavorableResult.configuration
-    echo &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {mostFavorableResult.hits}"
+    styleDim.styledEcho &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {mostFavorableResult.hits}"
 
     return @[mostFavorableResult]
 
@@ -291,9 +291,31 @@ proc determineFuzzParameters*(
     styledEcho(fgYellow, &"Identified no very favorable configurations.")
     if likelyResults.len > 0:
       styledEcho(fgYellow, &"Identified {likelyResults.len} somewhat favorable configurations.")
-      for r in excellentResults:
+      for r in likelyResults:
         let c = r.configuration
-        echo &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {r.hits}"
+        styleDim.styledEcho &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {r.hits}"
+      if likelyResults.len > 4:
+        fgYellow.styledEcho &"Picking up to 2 somewhat favorable configurations per port."
+        let groupedByPort = likelyResults.uFold(
+          proc(
+            acc: var Table[int, seq[FavorableConfiguration]], 
+            curr: FavorableConfiguration
+          ): void =
+            let port = curr.configuration.port
+            if not acc.hasKey(port):
+              acc[port] = @[curr]
+            elif acc[port].len < 2:
+              acc[port].add(curr),
+          initTable[int, seq[FavorableConfiguration]]()
+        )
+        let chosenLikelyResults = groupedByPort.values.toSeq.flatten
+
+        fgYellow.styledEcho &"Picked these {chosenLikelyResults.len} configurations:"
+        for r in chosenLikelyResults:
+          let c = r.configuration
+          styleDim.styledEcho &"- port: {c.port}, proto: {c.protocol}, code: {c.filteredStatusCode}, size: {c.filteredSize}, hits: {r.hits}"
+        return chosenLikelyResults
+
     elif noneResults.len > 0:
       styledEcho(fgYellow, &"Identified {noneResults.len} bad configurations.")
     

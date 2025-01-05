@@ -42,3 +42,6 @@ proc uFold*[Acc, Cur](
   for x in input:
     fn(result, x)
   
+proc flatten*[T](a: seq[seq[T]]): seq[T] =
+  for subseq in a:
+    result &= subseq

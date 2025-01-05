@@ -9,6 +9,7 @@ bin           = @["boxscanner"]
 requires "nim >= 2.2.0"
 requires "malebolgia == 1.3.2"
 requires "puppy == 2.1.2"
+requires "htmlparser == 0.1.0"
 
 task docs, "Generates documentation":
   exec "nim doc --project --index:on --outdir:htmldocs ./src/boxscanner.nim"

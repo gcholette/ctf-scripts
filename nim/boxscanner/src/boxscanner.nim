@@ -1,5 +1,5 @@
 import std/[strformat, cmdline, posix, terminal, tables, strutils]
-import boxscanner/[filemanagement, nmap, requirementscheck, wordlists, fuzzer, fingerprint]
+import boxscanner/[filemanagement, nmap, requirementscheck, wordlists, fuzzer, fingerprint, crawler]
 
 const nimbleContents = staticRead("../boxscanner.nimble")
 let version = nimbleContents.split("\n")[0].split('=')[1].strip(chars = { '"', ' ' })
@@ -75,6 +75,13 @@ proc mainScan*() =
       updateHostsFile(r, ip)
   else:
     styledEcho(fgYellow, "Did not identify any vhosts.")
+  
+  echo ""
+  for p in nmapReport.openPorts:
+    echo &"Crawling {host}:{p}"
+    let r = crawl(host, p)
+    styleDim.styledEcho &"Crawl status: {r.status}"
+
 
   echo ""
   styledEcho(fgCyan, "-- Summary --")

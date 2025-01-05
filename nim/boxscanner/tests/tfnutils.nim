@@ -1,4 +1,4 @@
-import std/[tables, unittest, sequtils, sugar, strformat]
+import std/[tables, unittest, sequtils, sugar]
 import boxscanner/fnutils
 
 suite "uFold":
@@ -20,3 +20,11 @@ suite "uFold":
         acc[curr] = curr + 1,
       initOrderedTable[int, int]()
     ) == { 1: 2, 2: 3, 3: 4 }.toOrderedTable
+
+suite "flatten":
+  test "works with basic types":
+    check @[@[1,2], @[3,4]].flatten == @[1,2,3,4]
+    check @[@["a","b"], @["c","d"]].flatten == @["a","b","c","d"]
+  
+  test "can nest seqs in seqs":
+    check @[@[@[1],@[2]], @[@[3],@[4]]].flatten == @[@[1],@[2],@[3],@[4]]
